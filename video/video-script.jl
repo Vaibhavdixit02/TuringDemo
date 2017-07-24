@@ -12,20 +12,22 @@
                ##############################
                ##############################
 
-using JLD           # for loading training data
-using Plots         # for visualization
-using Distributions # for using all kinds of distributions
-using Turing        # yeah - it's Turing.jl
+using JLD                 # for loading training data
+using Plots               # for visualization
+using Distributions       # for using all distributions
+using Turing              # yeah - it's Turing.jl
 
 ################################
 # 1. Hidden Markov Model (HMM) #
 ################################
 
-hmm_data = load("hmm-data.jld")["data"]     # load data
+# Load data
+hmm_data = load("hmm-data.jld")["data"]
 
-plot(1:hmm_data["N"], hmm_data["obs"],      # visualize data
+# Visualize data
+plot(1:hmm_data["N"], hmm_data["obs"],
      line=:scatter, lab="obs", m=:circle)
-plot!(1:hmm_data["N"], hmm_data["hid_ground"],      # visualize data
+plot!(1:hmm_data["N"], hmm_data["hid_ground"],
       line=:scatter, lab="hid (ground ture)", m=:diamond)
 
 # Define a HMM model with data as
@@ -46,9 +48,12 @@ end
 
 N_samples = 100 # number of samples to generate
 
-hmm_chn = sample(hmm_model(data=hmm_data), # sample from "hmm_model" with data as "hmm_data" using
-                 PG(10, 100))              # "PG" with "10" particles for "100" iterations
+# Sample from "hmm_model" with data as "hmm_data" using
+# "PG" with "10" particles for "100" iterations
+hmm_chn = sample(hmm_model(data=hmm_data),
+                 PG(10, 100))
 
+# Visualize inference result
 plot!(1:hmm_data["N"], hmm_chn[:hid][N_samples],
       line=:scatter, lab="hid (HMM)", m=:star4)
 
@@ -84,10 +89,14 @@ end
 
 N_samples = 100 # number of samples to generate
 
-bayes_hmm_chn = sample(bayes_hmm_model(data=hmm_data),  # sample from "bayes_hmm_model" with data as "hmm_data" using
-                       Gibbs(N_samples,                 # "Gibbs" sampler for "N_samples" iterations by combing
-                             PG(10, 1, :hid),           # "PG" with "10" particles for "hid", and
-                             HMC(1, 0.2, 3, :T, :sig))) # "HMC" with leapfrog params "0.2" and "3" for "T" and "sig"
+# Sample from "bayes_hmm_model" with data as "hmm_data" using
+# "Gibbs" sampler for "N_samples" iterations by combing
+# "PG" with "10" particles for "hid", and
+# "HMC" with leapfrog params "0.2" and "3" for "T" and "sig"
+bayes_hmm_chn = sample(bayes_hmm_model(data=hmm_data),
+                       Gibbs(N_samples,
+                             PG(10, 1, :hid),
+                             HMC(1, 0.2, 3, :T, :sig)))
 
 plot!(1:hmm_data["N"], bayes_hmm_chn[:hid][N_samples],
       line=:scatter, lab="hid (BayesHMM)", m=:star5)
@@ -96,7 +105,8 @@ plot!(1:hmm_data["N"], bayes_hmm_chn[:hid][N_samples],
 # 3. Latent Dirichelt Allocation (LDA) #
 ########################################
 
-lda_data = load("lda-data.jld")["data"]   # load data
+# Load data
+lda_data = load("lda-data.jld")["data"]
 
 # Define the LDA model with parameters:
 #   K := topic num (=4)        w := word instances
@@ -128,20 +138,20 @@ N_samples = 100
 
 lda_chn = sample(lda_model(data=lda_data),
                  Gibbs(N_samples,
-                       PG(20, 1, :z),
-                       HMC(1, 0.2, 3, :θ, :ϕ)))
+                       PG(200, 1, :z),
+                       HMC(1, 0.15, 5, :θ, :ϕ)))
 
-# Collapsed version with vectorization for speed-up
+# Collapsed version with vectorization for (huge) speed-up
 @model lda_model_vec(K, V, M, N, w, doc, β, α) = begin
- θ = Matrix{Real}(K, M)
- θ ~ [Dirichlet(α)]
+  θ = Matrix{Real}(K, M)
+  θ ~ [Dirichlet(α)]
 
- ϕ = Matrix{Real}(V, K)
- ϕ ~ [Dirichlet(β)]
+  ϕ = Matrix{Real}(V, K)
+  ϕ ~ [Dirichlet(β)]
 
- log_ϕ_dot_θ = log(ϕ * θ)
- lp = mapreduce(n -> log_ϕ_dot_θ[w[n], doc[n]], +, 1:N)
- Turing.acclogp!(vi, lp)
+  log_ϕ_dot_θ = log(ϕ * θ)
+  lp = mapreduce(n -> log_ϕ_dot_θ[w[n], doc[n]], +, 1:N)
+  Turing.acclogp!(vi, lp)
 end
 
 N_samples = 1000
@@ -151,18 +161,23 @@ lda_vec_chn = sample(lda_model_vec(data=lda_data),
 
 ϕ = mean(lda_vec_chn[:ϕ])
 
-bar(lda_data["words"], [ϕ], layout=@layout([a; b; c; d]), xrotation=15,
-    labels=["topic 1" "topic 2" "topic 3" "topic 4"], legendfont=font(7))
+bar(lda_data["words"], [ϕ], layout=@layout([a; b; c; d]),
+    labels=["topic 1" "topic 2" "topic 3" "topic 4"],
+    legendfont=font(7), xrotation=15)
 
 ########################################
 # 4. Bayesian Neural Network (BayesNN) #
 ########################################
 
-bayes_nn_data = load("bayes-nn-data.jld")["data"]     # load data
+# Load data
+bayes_nn_data = load("bayes-nn-data.jld")["data"]
 
 # Visualization data
-plot(bayes_nn_data["xs"][:,1], bayes_nn_data["xs"][:,2], group=bayes_nn_data["ts"], linetype=:scatter,
-     xlims=(-6, 6), ylims=(-6, 6))
+vis_nn_data() = plot(bayes_nn_data["xs"][:,1],
+                     bayes_nn_data["xs"][:,2],
+                     group=bayes_nn_data["ts"], linetype=:scatter,
+                     xlims=(-6, 6), ylims=(-6, 6))
+vis_nn_data()
 
 # Define sigmoid function
 σ(x) = 1.0 ./ (1.0 + exp(-x))
@@ -171,10 +186,10 @@ plot(bayes_nn_data["xs"][:,1], bayes_nn_data["xs"][:,2], group=bayes_nn_data["ts
 #   layer: input -+> hidden_1 -+> hidden_2 -+> output
 #     dim:   2    |     3      |     2      |    1
 #               tanh         tanh        sigmoid
-nn_forward(x, W₁, b₁, W₂, b₂, wₒ, bₒ) = begin
+nn_fwd(x, W₁, b₁, W₂, b₂, wₒ, bₒ) = begin
     h₁ = tanh(W₁' * x + b₁)
     h₂ = tanh(W₂' * h₁ + b₂)
-    σ(wₒ' * h₂ + bₒ)
+    σ(wₒ' * h₂ + bₒ)[1]   # convert length-1 vector to scalar
 end
 
 alpha = 0.25              # regularizatin term
@@ -197,13 +212,14 @@ sigma = sqrt(1.0 / alpha) # std of the Gaussian prior
     bₒ ~ Normal(0, sigma)
 
     for n = 1:N
-        ts[n] ~ Bernoulli(nn_forward(xs[n,:], W₁, b₁, W₂, b₂, wₒ, bₒ)[1])
+        ts[n] ~ Bernoulli(nn_fwd(xs[n,:], W₁, b₁, W₂, b₂, wₒ, bₒ))
     end
 end
 
 N_samples = 2000
 
-bayes_nn_ch = sample(bayes_nn(data=bayes_nn_data), HMC(N_samples, 0.05, 4));
+bayes_nn_ch = sample(bayes_nn(data=bayes_nn_data),
+                     HMC(N_samples, 0.05, 4));
 
 na2mat(na) = begin
     ncol = length(na); nrow = length(na[1])
@@ -212,16 +228,27 @@ na2mat(na) = begin
     mat
 end
 
-nn_params = [map(na->na2mat(na), bayes_nn_ch[:W₁]), bayes_nn_ch[:b₁],
-             map(na->na2mat(na), bayes_nn_ch[:W₂]), bayes_nn_ch[:b₂],
+_, map_idx = findmax(bayes_nn_ch[:lp])
+
+nn_params = [map(na2mat, bayes_nn_ch[:W₁]), bayes_nn_ch[:b₁],
+             map(na2mat, bayes_nn_ch[:W₂]), bayes_nn_ch[:b₂],
              bayes_nn_ch[:wₒ], bayes_nn_ch[:bₒ]]
 
-nn_predict(x, n_end, W₁, b₁, W₂, b₂, wₒ, bₒ) = begin
-    mean([nn_forward(x, W₁[i], b₁[i], W₂[i], b₂[i], wₒ[i], bₒ[i])[1] for i in 1:20:n_end])
-end
+map_predict(x, nn_params, map_idx) =
+  nn_fwd(x, map(p -> p[map_idx], nn_params)...)
 
-contour!(linspace(-6, 6), linspace(-6, 6), (x, y) -> nn_predict([x, y], N_samples, nn_params...),
-         xlims=(-6,6), ylims=(-6,6))
+vis_nn_data()
+contour!(linspace(-6, 6), linspace(-6, 6),
+         (x, y) -> map_predict([x, y], nn_params, map_idx),
+         xlims=(-6, 6), ylims=(-6, 6))
+
+bayes_predict(x, n_end, nn_params) =
+  mean([nn_fwd(x, map(p -> p[i], nn_params)...) for i in 1:25:n_end])
+
+vis_nn_data()
+contour!(linspace(-6, 6), linspace(-6, 6),
+         (x, y) -> bayes_predict([x, y], N_samples, nn_params),
+         xlims=(-6, 6), ylims=(-6, 6))
 
 ############################
 # 5. Differential Equation #
