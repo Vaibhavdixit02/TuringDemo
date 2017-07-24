@@ -134,7 +134,7 @@ lda_data = load("lda-data.jld")["data"]
   end
 end
 
-N_samples = 50
+N_samples = 10
 
 lda_chn = sample(lda_model(data=lda_data),
                  Gibbs(N_samples,
