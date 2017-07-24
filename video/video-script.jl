@@ -143,7 +143,7 @@ lda_chn = sample(lda_model(data=lda_data),
 
 # Pre-compute indics
 lda_data["lidx"] =
-  (lda_data["w"] .- 1) .* lda_data["V"] .+ lda_data["doc"]
+  (lda_data["doc"] .- 1) .* lda_data["V"] .+ lda_data["w"]
 
 # Collapsed version with vectorization for (huge) speed-up
 @model lda_model_vec(K, V, M, N, w, doc, β, α, lidx) = begin
