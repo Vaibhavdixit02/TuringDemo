@@ -138,7 +138,7 @@ N_samples = 100
 
 lda_chn = sample(lda_model(data=lda_data),
                  Gibbs(N_samples,
-                       PG(200, 1, :z),
+                       PG(20, 1, :z),
                        HMC(1, 0.15, 5, :θ, :ϕ)))
 
 # Pre-compute indics
