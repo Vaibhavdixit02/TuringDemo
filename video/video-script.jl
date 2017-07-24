@@ -141,8 +141,12 @@ lda_chn = sample(lda_model(data=lda_data),
                        PG(200, 1, :z),
                        HMC(1, 0.15, 5, :θ, :ϕ)))
 
+# Pre-compute indics
+lda_data["lidx"] =
+  (lda_data["w"] .- 1) .* lda_data["V"] .+ lda_data["doc"]
+
 # Collapsed version with vectorization for (huge) speed-up
-@model lda_model_vec(K, V, M, N, w, doc, β, α) = begin
+@model lda_model_vec(K, V, M, N, w, doc, β, α, lidx) = begin
   θ = Matrix{Real}(K, M)
   θ ~ [Dirichlet(α)]
 
@@ -150,7 +154,8 @@ lda_chn = sample(lda_model(data=lda_data),
   ϕ ~ [Dirichlet(β)]
 
   log_ϕ_dot_θ = log(ϕ * θ)
-  lp = mapreduce(n -> log_ϕ_dot_θ[w[n], doc[n]], +, 1:N)
+  # lp = mapreduce(n -> log_ϕ_dot_θ[w[n], doc[n]], +, 1:N)
+  lp = sum(broadcast_getindex(log_ϕ_dot_θ, lidx))
   Turing.acclogp!(vi, lp)
 end
 
