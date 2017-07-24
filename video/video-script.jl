@@ -141,6 +141,9 @@ lda_chn = sample(lda_model(data=lda_data),
                        PG(20, 1, :z),
                        HMC(1, 0.15, 5, :θ, :ϕ)))
 
+###########################
+# Optimized version below #
+
 # Pre-compute indics
 lda_data["lidx"] =
   (lda_data["doc"] .- 1) .* lda_data["V"] .+ lda_data["w"]
