@@ -16,8 +16,6 @@ using JLD                 # for loading training data
 using Plots               # for visualization
 using Distributions       # for using all distributions
 using Turing              # yeah - it's Turing.jl
-plot(linspace(1,3,49), exp(linspace(1,3,49)), leg=false, ticks=nothing,
-     annotations=(2, 10, text("Welcome to Turing.jl demo!", :bottom, 29)))
 
 ################################
 # 1. Hidden Markov Model (HMM) #
