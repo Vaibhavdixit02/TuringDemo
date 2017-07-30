@@ -28,7 +28,7 @@ hmm_data = load("hmm-data.jld")["data"]
 plot(1:hmm_data["N"], hmm_data["obs"],
      line=:scatter, lab="obs", m=:circle)
 plot!(1:hmm_data["N"], hmm_data["hid_ground"],
-      line=:scatter, lab="hid (ground ture)", m=:diamond)
+      line=:scatter, lab="hid (ground true)", m=:diamond)
 
 # Define a HMM model with data as
 #          K := number of hidden stats (=3)
@@ -261,3 +261,5 @@ contour!(linspace(-6, 6), linspace(-6, 6),
 ############################
 # 5. Differential Equation #
 ############################
+
+# On Jupyter Notebook
