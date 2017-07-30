@@ -250,7 +250,8 @@ map_predict(x, nn_params, map_idx) =
 vis_nn_data()
 contour!(linspace(-6, 6), linspace(-6, 6),
          (x, y) -> map_predict([x, y], nn_params, map_idx),
-         xlims=(-6, 6), ylims=(-6, 6))
+         xlims=(-6, 6), ylims=(-6, 6), title="BayesNN prediction (MAP)")
+savefig("bnn-map.png")
 
 bayes_predict(x, n_end, nn_params) =
   mean([nn_fwd(x, map(p -> p[i], nn_params)...) for i in 1:25:n_end])
@@ -258,7 +259,8 @@ bayes_predict(x, n_end, nn_params) =
 vis_nn_data()
 contour!(linspace(-6, 6), linspace(-6, 6),
          (x, y) -> bayes_predict([x, y], N_samples, nn_params),
-         xlims=(-6, 6), ylims=(-6, 6))
+         xlims=(-6, 6), ylims=(-6, 6), title="BayesNN prediction (Bayes)")
+savefig("bnn-bayes.png")
 
 ############################
 # 5. Differential Equation #
