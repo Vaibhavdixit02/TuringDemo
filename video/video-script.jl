@@ -87,8 +87,6 @@ plot!(1:hmm_data["N"], hmm_chn[:hid][N_samples],
   end
 end
 
-N_samples = 100 # number of samples to generate
-
 # Sample from "bayes_hmm_model" with data as "hmm_data" using
 # "Gibbs" sampler for "N_samples" iterations by combing
 # "PG" with "10" particles for "hid", and
