@@ -92,7 +92,7 @@ end
 # "PG" with "10" particles for "hid", and
 # "HMC" with leapfrog params "0.2" and "3" for "T" and "sig"
 bayes_hmm_chn = sample(bayes_hmm_model(data=hmm_data),
-                       Gibbs(N_samples,
+                       Gibbs(N_samples, # N_samples is same as before, 100
                              PG(10, 1, :hid),
                              HMC(1, 0.2, 3, :T, :sig)))
 
