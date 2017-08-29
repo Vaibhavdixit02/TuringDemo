@@ -10,4 +10,4 @@ using Plots
 
 plot(linspace(1,3,49), exp(linspace(1,3,49)), leg=false, ticks=nothing,
      annotations=(2, 10, text("Welcome to Turing.jl demo!", :bottom, 29)))
-srand(12350)
+srand(12352)
